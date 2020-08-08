@@ -1,3 +1,11 @@
+"""Global data"""
+
+
+import queue
+
+
+username = None
+token = None
 """ Network
 """
 
