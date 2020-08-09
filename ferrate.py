@@ -51,11 +51,11 @@ def send_msg_1try(msg):
             % room_id
             , data = json.dumps({
                 "text": msg
-            },headers = {
+            }),headers = {
                 "Content-Type": "application/json",
                 "Accept": "application/json",
                 "Authorization": "Bearer %s" % token
-            }))
+            })
     except requests.RequestException:
         return False
     return True
@@ -63,8 +63,8 @@ def send_msg_1try(msg):
 def send_msg(msg):
     if send_msg_1try(msg) or send_msg_1try(msg) or send_msg_1try(msg):
         logging.info("Message sent: '%s'" % msg)
-
-    logging.error("Failed to send message: '%s'" % msg)
+    else:
+        logging.error("Failed to send message: '%s'" % msg)
 
 def main_loop():
     logging.basicConfig(level="INFO")
