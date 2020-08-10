@@ -15,7 +15,7 @@ import time
 
 username = None
 token = None
-room_name = "Oriental Sakura/community"
+room_name = "ferrate/community"
 room_id = None
 
 
@@ -62,43 +62,58 @@ def send_msg_1try(msg):
     return True
 
 def send_msg(msg):
-    if send_msg_1try(msg) or send_msg_1try(msg) or send_msg_1try(msg):
+    if send_msg_1try(msg) or send_msg_1try(msg):
         logging.info("Message sent: '%s'" % msg)
     else:
         logging.error("Failed to send message: '%s'" % msg)
 
 def main_loop():
     logging.basicConfig(level="INFO")
-    test_msg="""POST TEST"""
 
     global username, token
     token = input("口令：")
     global room_id
     room_id = get_room()
 
-    send_msg(test_msg)
+    send_msg("""测试stream API，我是复读机""")
 
     cnt = 0
     while True:
         if cnt > 0:
-            logging.error("Streaming API connection broken. Retrying in 5s.")
-            time.sleep(5)
+            logging.error("Streaming API connection broken. Retrying in 20s.")
+            time.sleep(20)
         cnt += 1
 
         r_stream = None
         try:
-            r_stream = requests.get("https://api.gitter.im/v1/rooms"
+            r_stream = requests.get(
+                "https://stream.gitter.im/v1/rooms/%s/chatMessages" % room_id
                 , headers = {
                     "Content-Type": "application/json",
                     "Accept": "application/json",
                     "Authorization": "Bearer %s" % token
                 }
-                , streaming = True)
+                , stream = True)
         except requests.RequestException:
             r_stream = None
 
         if r_stream == None:
-            pass
+            logging.error("Request failed.")
+            continue
+        
+        for i in r_stream.iter_lines(decode_unicode = True):
+            if len(i) >= 5:
+                logging.info("Read stream data: %s" % i)
+                i_dec = json.loads(i)
+
+                if (str.startswith(i_dec['text'], "**机器人消息**")
+                    or str.startswith(i_dec['text'],"no_bot")):
+                    logging.info("Data filtered.")
+                    continue
+                
+                send_msg(i_dec['text'])
+            else:
+                logging.info("Invalid line: %s" % i)
 
 
 if __name__ == "__main__":
