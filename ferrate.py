@@ -7,6 +7,7 @@ import queue
 import requests
 import logging
 import json
+import time
 
 
 """Global data"""
@@ -68,13 +69,7 @@ def send_msg(msg):
 
 def main_loop():
     logging.basicConfig(level="INFO")
-    test_msg="""
-- 我不会伤害人类，或看到人类受到伤害而袖手旁观。
-- 我会服从人类的命令。
-- 我会保护自己。
-- 目前我正在开发中，Fork me on Github:
-[Repo](https://github.com/ferrumcccp/ferrate)
-    """
+    test_msg="""POST TEST"""
 
     global username, token
     token = input("口令：")
@@ -82,6 +77,29 @@ def main_loop():
     room_id = get_room()
 
     send_msg(test_msg)
+
+    cnt = 0
+    while True:
+        if cnt > 0:
+            logging.error("Streaming API connection broken. Retrying in 5s.")
+            time.sleep(5)
+        cnt += 1
+
+        r_stream = None
+        try:
+            r_stream = requests.get("https://api.gitter.im/v1/rooms"
+                , headers = {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json",
+                    "Authorization": "Bearer %s" % token
+                }
+                , streaming = True)
+        except requests.RequestException:
+            r_stream = None
+
+        if r_stream == None:
+            pass
+
 
 if __name__ == "__main__":
     main_loop()
