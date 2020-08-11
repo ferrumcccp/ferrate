@@ -19,6 +19,13 @@ room_name = "ferrate/community"
 room_id = None
 
 
+"""Command process
+"""
+class Room:
+    """A room, a session for running commands independently
+    """
+
+
 """ Network
 """
 
@@ -79,6 +86,8 @@ def main_loop():
 我是Ferrumcccp暑假划水写的Bot。仅在周末、假期等主人有空接触手机
 的时间段内开放。
 
+Fork me on Github: [Repo](https://github.com/ferrumcccp/ferrate)
+
 目前支持：
 - 自动复读
 """)
@@ -109,7 +118,7 @@ def main_loop():
 
         fudu = ""
         fudu_cnt = 0
-        try: 
+        try:
             for i in r_stream.iter_lines(decode_unicode = True):
                 if len(i) >= 5:
                     logging.info("Read stream data: %s" % i)
@@ -120,6 +129,7 @@ def main_loop():
                         logging.info("Message filtered.")
                         continue
 
+                    # 复读
                     if i_dec['text'] == fudu:
                         fudu_cnt += 1
                     else:
@@ -128,6 +138,7 @@ def main_loop():
                     if fudu_cnt == 2:
                         send_msg(i_dec['text'])
 
+                    # 危机干预
                     suicide_kw = ["suicide"
                         , "want to die"
                         , "kill myself"
@@ -142,13 +153,16 @@ def main_loop():
                     for kw in suicide_kw:
                         if kw in i_dec['text']:
                             send_msg("""
-    虽然我无法理解人类的情感，但是我知道你身处挣扎中。
-    不要怕，你并不孤单，有_人_能帮助你。
+虽然我无法理解人类的情感，但是我知道你身处挣扎中。
+不要怕，你并不孤单，有_人_能帮助你。
 
-    - 北京危机热线：[01082951332](tel:01082951332)
-    - 福州第四医院心理咨询热线：[059185666661](tel:059185666661)
-    """)
+- 北京危机热线：[01082951332](tel:01082951332)
+- 福州第四医院心理咨询热线：[059185666661](tel:059185666661)
+""")
                             break
+
+                    # Process Command
+
                 else:
                     logging.info("Non-message: %s" % i)
         except requests.RequestException:
