@@ -75,7 +75,13 @@ def main_loop():
     global room_id
     room_id = get_room()
 
-    send_msg("""测试stream API，我是复读机""")
+    send_msg("""
+我是Ferrumcccp暑假划水写的Bot。仅在周末、假期等主人有空接触手机
+的时间段内开放。
+
+目前支持：
+- 自动复读
+""")
 
     cnt = 0
     while True:
@@ -100,6 +106,9 @@ def main_loop():
         if r_stream == None:
             logging.error("Request failed.")
             continue
+
+        fudu = ""
+        fudu_cnt = 0
         
         for i in r_stream.iter_lines(decode_unicode = True):
             if len(i) >= 5:
@@ -108,12 +117,40 @@ def main_loop():
 
                 if (str.startswith(i_dec['text'], "**机器人消息**")
                     or str.startswith(i_dec['text'],"no_bot")):
-                    logging.info("Data filtered.")
+                    logging.info("Message filtered.")
                     continue
-                
-                send_msg(i_dec['text'])
+
+                if i_dec['text'] == fudu:
+                    fudu_cnt += 1
+                else:
+                    fudu_cnt = 1
+                    fudu = i_dec['text']
+                if fudu_cnt == 2:
+                    send_msg(i_dec['text'])
+
+                suicide_kw = ["suicide"
+                    , "want to die"
+                    , "kill myself"
+                    , "end it all"
+                    , "自杀"
+                    , "想死"
+                    , "跳楼"
+                    , "上吊"
+                    , "服毒"
+                    , "割腕"
+                    , "不想活"] #应该够用了
+                for kw in suicide_kw:
+                    if kw in i_dec['text']:
+                        send_msg("""
+虽然我无法理解人类的情感，但是我知道你身处挣扎中。
+不要怕，你并不孤单，有_人_能帮助你。
+
+- 北京危机热线：[01082951332](tel:01082951332)
+- 福州第四医院心理咨询热线：[059185666661](tel:059185666661)
+""")
+                        break
             else:
-                logging.info("Invalid line: %s" % i)
+                logging.info("Non-message: %s" % i)
 
 
 if __name__ == "__main__":
